@@ -71,9 +71,18 @@ class Controller_Empresa:
         # Cria uma nova conexão com o banco que permite alteração
         opcao = "1"
         while opcao == "1":
-            self.mongo.connect()
             # Solicita ao usuário o CPF do Cliente a ser alterado
             cnpj = input("CNPJ da Empresa que irá excluir: ")
+
+            if self.verifica_existencia_holerite_cnpj(cnpj=cnpj, external=True):
+                print(f"O CNPJ {cnpj} informado não existe na holerite. Pode-se excluir empresa")
+            else:
+                print(f"Existe uma holerite com o cnpj informado, exclua a holerite primeiro")
+                opcao = "2"
+                return None
+
+            self.mongo.connect()
+
             confirma = input("Tem certeza que deseja excluir? 1-sim 2-não")
             if confirma == "1":
                 # Verifica se o cliente existe na base de dados
@@ -124,3 +133,18 @@ class Controller_Empresa:
             self.mongo.close()
 
         return df_empresa
+
+    def verifica_existencia_holerite_cnpj(self, cnpj:str=None, external: bool = False) -> bool:
+        # Recupera os dados do novo pedido criado transformando em um DataFrame
+        if external:
+            # Cria uma nova conexão com o banco que permite alteração
+            self.mongo.connect()
+
+        # Recupera os dados do novo cliente criado transformando em um DataFrame
+        df_holerite = pd.DataFrame(self.mongo.db["holerite"].find({"cnpj":f"{cnpj}"}, {"codigo": 1, "cpf": 1, "cnpj": 1, "salariobruto": 1, "fgts": 1, "irpf": 1, "salarioliquido": 1, "_id": 0}))
+
+        if external:
+            # Fecha a conexão com o Mongo
+            self.mongo.close()
+
+        return df_holerite.empty
