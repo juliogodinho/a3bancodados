@@ -74,12 +74,24 @@ class Controller_Funcionario:
             # Solicita ao usuário o CPF do Cliente a ser alterado
             cpf = input("CPF do Funcionario que irá excluir: ")
 
-            if self.verifica_existencia_holerite_cpf(cpf=cpf, external=True):
-                print(f"O CPF {cpf} informado não existe na holerite. Pode-se excluir funcionario")
-            else:
-                print(f"Existe uma holerite com o cpf informado, exclua a holerite primeiro")
-                opcao = "2"
-                return None
+            temholerite = "1"
+            while temholerite == "1":
+                if self.verifica_existencia_holerite_cpf(cpf=cpf, external=True):
+                    print(f"O CPF {cpf} informado não existe na holerite. Pode-se excluir funcionario")
+                    temholerite = "2"
+                else:
+                    print(f"Existe uma holerite com o cpf informado, exclua a holerite primeiro")
+                    confirmaexcluirholerite = input("Deseja excluir holerite com o cpf informado?1-sim 2-nao")
+                    if confirmaexcluirholerite == "1":
+                        self.mongo.connect()
+                        self.mongo.db["holerite"].delete_one({"cpf":f"{cpf}"})
+                        self.mongo.close()
+                        print("Holerite excluida com sucesso!")
+                        opcao = "2"
+                    else:
+                        opcao = "2"
+                        temholerite = "2"
+                        return None
 
             self.mongo.connect()
 
