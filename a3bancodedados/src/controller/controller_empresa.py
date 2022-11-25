@@ -74,12 +74,24 @@ class Controller_Empresa:
             # Solicita ao usuário o CPF do Cliente a ser alterado
             cnpj = input("CNPJ da Empresa que irá excluir: ")
 
-            if self.verifica_existencia_holerite_cnpj(cnpj=cnpj, external=True):
-                print(f"O CNPJ {cnpj} informado não existe na holerite. Pode-se excluir empresa")
-            else:
-                print(f"Existe uma holerite com o cnpj informado, exclua a holerite primeiro")
-                opcao = "2"
-                return None
+            temholerite = "1"
+            while temholerite == "1":
+                if self.verifica_existencia_holerite_cnpj(cnpj=cnpj, external=True):
+                    print(f"O CNPJ {cnpj} informado não existe na holerite. Pode-se excluir empresa")
+                    temholerite = "2"
+                else:
+                    print(f"Existe uma holerite com o cnpj informado, exclua a holerite primeiro")
+                    confirmaexcluirholerite = input("Deseja excluir holerite com o cnpj informado?1-sim 2-nao")
+                    if confirmaexcluirholerite == "1":
+                        self.mongo.connect()
+                        self.mongo.db["holerite"].delete_one({"cnpj":f"{cnpj}"})
+                        self.mongo.close()
+                        print("Holerite excluida com sucesso!")
+                        opcao = "2"
+                    else:
+                        opcao = "2"
+                        temholerite = "2"
+                        return None
 
             self.mongo.connect()
 
